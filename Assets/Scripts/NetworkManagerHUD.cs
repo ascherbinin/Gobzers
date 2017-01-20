@@ -55,10 +55,24 @@ namespace Gobzers
 			}
 		}
 
-		public void OnClickStartServer ()
+		public void OnClickStartHost ()
 		{
 			if (!NetworkClient.active && !NetworkServer.active && manager.matchMaker == null) {
 				manager.StartHost ();
+			}
+		}
+
+		public void OnClickStopHost ()
+		{
+			if (NetworkServer.active || NetworkClient.active) {
+				manager.StartHost ();
+			}
+		}
+
+		public void OnClickStartServer ()
+		{
+			if (!NetworkClient.active && !NetworkServer.active && manager.matchMaker == null) {
+				manager.StartServer();
 			}
 		}
 

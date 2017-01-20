@@ -34,7 +34,7 @@ namespace Gobzers
             {
                 return;
             }
-            bool crouch = Input.GetKey(KeyCode.LeftControl);
+			bool crouch = Input.GetKey(KeyCode.LeftShift);
 			float h = Input.GetAxis("Horizontal");
             // Pass all parameters to the character control script.
             m_Character.Move(h, crouch, m_Jump);

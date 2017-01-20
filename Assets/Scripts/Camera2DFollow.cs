@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace UnityStandardAssets._2D
+namespace Gobzers
 {
     public class Camera2DFollow : MonoBehaviour
     {

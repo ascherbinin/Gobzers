@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.Networking;
-
+using UnityEngine.UI;
 
 #if ENABLE_UNET
 
@@ -12,15 +12,24 @@ namespace Gobzers
 	[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 	public class NetworkManagerHUD : MonoBehaviour
 	{
+		public GameObject ConPanel;
+		public GameObject InfoPanel;
+		public Text ifServerAdress;
+		public Text lblInfo;
 		public NetworkManager manager;
-        public GameObject tbAdress;
+
 		[SerializeField] public bool showGUI = true;
 		[SerializeField] public int offsetX;
 		[SerializeField] public int offsetY;
-		[SerializeField] public int opaField;
+
 
 		// Runtime variable
-		bool showServer = false;
+		//bool showServer = false;
+
+		void Start ()
+		{
+			ChangeUI ();
+		}
 
 		void Awake()
 		{
@@ -32,22 +41,16 @@ namespace Gobzers
 			if (!showGUI)
 				return;
 
-			if (!NetworkClient.active && !NetworkServer.active && manager.matchMaker == null)
-			{
-				if (Input.GetKeyDown(KeyCode.S))
+				if (NetworkServer.active)
 				{
-					manager.StartServer();
+					lblInfo.text = "Server: port=" + manager.networkPort;
 				}
-				if (Input.GetKeyDown(KeyCode.H))
+				if (NetworkClient.active)
 				{
-					manager.StartHost();
+					lblInfo.text = "Client: address=" + manager.networkAddress + " port=" + manager.networkPort;
 				}
-				if (Input.GetKeyDown(KeyCode.C))
-				{
-					manager.StartClient();
-				}
-			}
-			if (NetworkServer.active && NetworkClient.active)
+
+			if (NetworkServer.active || NetworkClient.active)
 			{
 				if (Input.GetKeyDown(KeyCode.X))
 				{
@@ -59,14 +62,18 @@ namespace Gobzers
 		public void OnClickStartHost ()
 		{
 			if (!NetworkClient.active && !NetworkServer.active && manager.matchMaker == null) {
+				
 				manager.StartHost ();
+				ChangeUI ();
+				Debug.Log ($"Start HOST: HOST {manager.networkAddress}");
 			}
 		}
 
 		public void OnClickStopHost ()
 		{
 			if (NetworkServer.active || NetworkClient.active) {
-				manager.StartHost ();
+				manager.StopHost ();
+				ChangeUI ();
 			}
 		}
 
@@ -74,17 +81,28 @@ namespace Gobzers
 		{
 			if (!NetworkClient.active && !NetworkServer.active && manager.matchMaker == null) {
 				manager.StartServer();
+				ChangeUI ();
 			}
 		}
 
         public void OnClickStartClient()
         {
+			Debug.Log ($"NC ACTIVE: {NetworkClient.active}");
+			Debug.Log ($"NS ACTIVE: {NetworkServer.active}");
             if (!NetworkClient.active && !NetworkServer.active && manager.matchMaker == null)
             {
                 manager.StartClient();
-                manager.networkAddress = tbAdress.GetComponent("Text") as UnityEngine.UI.Text;
+				ChangeUI ();
+				Debug.Log ($"ADRESS: {ifServerAdress.text.ToString ()}");
+				manager.networkAddress = ifServerAdress.text.ToString ();
             }
         }
+
+		void ChangeUI()
+		{
+			ConPanel.SetActive (!ConPanel.activeSelf);
+			InfoPanel.SetActive (!InfoPanel.activeSelf);
+		}
 
   //      void OnGUI()
 		//{
@@ -156,5 +174,7 @@ namespace Gobzers
 
 		//}
 	}
+
+
 };
 #endif //ENABLE_UNET

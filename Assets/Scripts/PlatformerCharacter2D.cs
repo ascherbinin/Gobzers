@@ -18,6 +18,7 @@ namespace Gobzers
         const float k_CeilingRadius = .01f; // Radius of the overlap circle to determine if the player can stand up
         private Animator m_Anim;            // Reference to the player's animator component.
         private Rigidbody2D m_Rigidbody2D;
+        private PlayerPosSync syncPos;
         private bool m_FacingRight = true;  // For determining which way the player is currently facing.
 
         private void Awake()
@@ -27,6 +28,7 @@ namespace Gobzers
             m_CeilingCheck = transform.Find("CeilingCheck");
             m_Anim = GetComponent<Animator>();
             m_Rigidbody2D = GetComponent<Rigidbody2D>();
+            syncPos = GetComponent<PlayerPosSync>();
         }
 
 
@@ -77,17 +79,24 @@ namespace Gobzers
                 m_Rigidbody2D.velocity = new Vector2(move*m_MaxSpeed, m_Rigidbody2D.velocity.y);
 
                 // If the input is moving the player right and the player is facing left...
-                if (move > 0 && !m_FacingRight)
+                if ((move > 0 && !m_FacingRight) || (move < 0 && m_FacingRight))
                 {
-                    // ... flip the player.
-                    Flip();
+                    m_FacingRight = !m_FacingRight;
+                    syncPos.CmdFlipSprite(m_FacingRight);
                 }
-                    // Otherwise if the input is moving the player left and the player is facing right...
-                else if (move < 0 && m_FacingRight)
-                {
-                    // ... flip the player.
-                    Flip();
-                }
+                //if (move > 0 && !m_FacingRight)
+                //{
+                //    // ... flip the player.
+                //    syncPos.CmdFlipSprite(m_FacingRight);
+                //    Flip();
+                //}
+                //    // Otherwise if the input is moving the player left and the player is facing right...
+                //else if (move < 0 && m_FacingRight)
+                //{
+                //    // ... flip the player.
+                //    syncPos.CmdFlipSprite(m_FacingRight);
+                //    Flip();
+                //}
             }
             // If the player should jump...
             if (m_Grounded && jump && m_Anim.GetBool("Ground"))

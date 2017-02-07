@@ -65,7 +65,7 @@ namespace Gobzers
 				
 				manager.StartHost ();
 				ChangeUI ();
-				Debug.Log ($"Start HOST: HOST {manager.networkAddress}");
+				//Debug.Log ($"Start HOST: HOST {manager.networkAddress}");
 			}
 		}
 
@@ -87,13 +87,13 @@ namespace Gobzers
 
         public void OnClickStartClient()
         {
-			Debug.Log ($"NC ACTIVE: {NetworkClient.active}");
-			Debug.Log ($"NS ACTIVE: {NetworkServer.active}");
+			//Debug.Log ($"NC ACTIVE: {NetworkClient.active}");
+			//Debug.Log ($"NS ACTIVE: {NetworkServer.active}");
             if (!NetworkClient.active && !NetworkServer.active && manager.matchMaker == null)
             {
                 manager.StartClient();
 				ChangeUI ();
-				Debug.Log ($"ADRESS: {ifServerAdress.text.ToString ()}");
+				//Debug.Log ($"ADRESS: {ifServerAdress.text.ToString ()}");
 				manager.networkAddress = ifServerAdress.text.ToString ();
             }
         }

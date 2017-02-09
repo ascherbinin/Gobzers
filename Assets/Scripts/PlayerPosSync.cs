@@ -32,7 +32,6 @@ public class PlayerPosSync : NetworkBehaviour {
             SpriteScale.x = -factor;
             transform.localScale = SpriteScale;
         }
-        
                
         Debug.Log("SCALE: " + transform.localScale);
     }

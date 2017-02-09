@@ -26,6 +26,7 @@ namespace Gobzers
 				{
 					GameObject.Find ("SceneCamera").SetActive (false);
 				}
+				PlayerCamera.transform.parent = transform;
 	        }
 		}
 		
@@ -57,7 +58,7 @@ namespace Gobzers
 		}
 
 		[Command]
-		void CmdFire(Vector2 bulletPos, Quaternion startRotation, Vector2 direction)
+		void CmdFire(Vector2 bulletPos, Quaternion startRotation, Vector2 velocity)
 		{
 
 			// Create the Bullet from the Bullet Prefab
@@ -67,7 +68,7 @@ namespace Gobzers
 				startRotation);
 
 			// Add velocity to the bullet
-			bullet.GetComponent<Rigidbody2D>().velocity = direction;
+			bullet.GetComponent<Rigidbody2D>().velocity = velocity;
 
 			// Spawn the bullet on the Clients
 			NetworkServer.Spawn(bullet);

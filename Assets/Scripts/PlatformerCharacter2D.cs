@@ -21,7 +21,9 @@ namespace Gobzers
         private PlayerPosSync syncPos;
         private bool m_FacingRight = true;  // For determining which way the player is currently facing.
 
-        private void Awake()
+		public Camera playerCamera;
+        
+		private void Awake()
         {
             // Setting up references.
             m_GroundCheck = transform.Find("GroundCheck");
@@ -48,6 +50,13 @@ namespace Gobzers
 
             // Set the vertical animation
             m_Anim.SetFloat("vSpeed", m_Rigidbody2D.velocity.y);
+
+			Vector3 mousePos = playerCamera.ScreenToWorldPoint(Input.mousePosition);
+			Debug.Log (mousePos);
+			if ((mousePos.x > transform.position.x && !m_FacingRight) || (mousePos.x < transform.position.x && m_FacingRight)) {
+				m_FacingRight = !m_FacingRight;
+				syncPos.CmdFlipSprite(m_FacingRight);
+			}
         }
 
 
@@ -78,12 +87,6 @@ namespace Gobzers
                 // Move the character
                 m_Rigidbody2D.velocity = new Vector2(move*m_MaxSpeed, m_Rigidbody2D.velocity.y);
 
-                // If the input is moving the player right and the player is facing left...
-                if ((move > 0 && !m_FacingRight) || (move < 0 && m_FacingRight))
-                {
-                    m_FacingRight = !m_FacingRight;
-                    syncPos.CmdFlipSprite(m_FacingRight);
-                }
             }
             // If the player should jump...
             if (m_Grounded && jump && m_Anim.GetBool("Ground"))

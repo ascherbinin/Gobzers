@@ -1,9 +1,10 @@
 using System;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace Gobzers
 {
-    public class PlatformerCharacter2D : MonoBehaviour
+    public class PlatformerCharacter2D : NetworkBehaviour
     {
         [SerializeField] private float m_MaxSpeed = 10f;                    // The fastest the player can travel in the x axis.
         [SerializeField] private float m_JumpForce = 400f;                  // Amount of force added when the player jumps.
@@ -36,6 +37,8 @@ namespace Gobzers
 
         private void FixedUpdate()
         {
+            if (!isLocalPlayer)
+                return;
             m_Grounded = false;
 
             // The player is grounded if a circlecast to the groundcheck position hits anything designated as ground

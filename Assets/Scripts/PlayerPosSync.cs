@@ -4,7 +4,8 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 public class PlayerPosSync : NetworkBehaviour {
-    [SyncVar(hook = "FacingCallback")]
+    
+	[SyncVar(hook = "FacingCallback")]
     public bool netFacingRight = true;
 
     private float factor;

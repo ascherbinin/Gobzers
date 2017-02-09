@@ -84,19 +84,6 @@ namespace Gobzers
                     m_FacingRight = !m_FacingRight;
                     syncPos.CmdFlipSprite(m_FacingRight);
                 }
-                //if (move > 0 && !m_FacingRight)
-                //{
-                //    // ... flip the player.
-                //    syncPos.CmdFlipSprite(m_FacingRight);
-                //    Flip();
-                //}
-                //    // Otherwise if the input is moving the player left and the player is facing right...
-                //else if (move < 0 && m_FacingRight)
-                //{
-                //    // ... flip the player.
-                //    syncPos.CmdFlipSprite(m_FacingRight);
-                //    Flip();
-                //}
             }
             // If the player should jump...
             if (m_Grounded && jump && m_Anim.GetBool("Ground"))
@@ -106,18 +93,6 @@ namespace Gobzers
                 m_Anim.SetBool("Ground", false);
                 m_Rigidbody2D.AddForce(new Vector2(0f, m_JumpForce));
             }
-        }
-
-
-        private void Flip()
-        {
-            // Switch the way the player is labelled as facing.
-            m_FacingRight = !m_FacingRight;
-
-            // Multiply the player's x local scale by -1.
-            Vector3 theScale = transform.localScale;
-            theScale.x *= -1;
-            transform.localScale = theScale;
         }
     }
 }

@@ -7,16 +7,25 @@ namespace Gobzers
 {
 	public class PlayerScript : NetworkBehaviour
 	{
-	    public Camera PlayerCamera;
+		public GameObject PlayerCamera;
 		public GameObject bulletPrefab;
 		public Transform bulletSpawn;
+
+		[SerializeField]
+		private Camera _curCamera;
 		// Use this for initialization
 		void Start ()
 		{
-			if (!isLocalPlayer)
+			if (isLocalPlayer)
 	        {
-	            PlayerCamera.enabled = false;
-	            PlayerCamera.GetComponent<AudioListener>().enabled = false;
+				_curCamera = PlayerCamera.GetComponent<Camera> ();
+				_curCamera.enabled = true;
+	            PlayerCamera.GetComponent<AudioListener>().enabled = true;
+				PlayerCamera.GetComponent<Camera2DFollow>().enabled = true;
+				if (GameObject.Find ("SceneCamera") != null) 
+				{
+					GameObject.Find ("SceneCamera").SetActive (false);
+				}
 	        }
 		}
 		
@@ -30,38 +39,35 @@ namespace Gobzers
 	        //Debug.Log("Update");
 			if (Input.GetButtonDown("Fire1"))
 			{
-				CmdFire();
+				var mousePos = Input.mousePosition;
+				mousePos.z = 5.23F; //The distance between the camera and object
+				var spawnPos = _curCamera.WorldToScreenPoint(bulletSpawn.position);
+				mousePos.x = mousePos.x - spawnPos.x;
+				mousePos.y = mousePos.y - spawnPos.y;
+				var angle = Mathf.Atan2(mousePos.y, mousePos.x) * Mathf.Rad2Deg;
+				bulletSpawn.rotation = Quaternion.Euler(new Vector3(0, 0, angle));
+
+				Vector3 worldMousePos = _curCamera.ScreenToWorldPoint(Input.mousePosition);
+
+				Vector2 direction = (Vector2)((worldMousePos - transform.position));
+				direction.Normalize ();
+
+				CmdFire(bulletSpawn.position + (Vector3)(direction * 0.5f), Quaternion.Euler(new Vector3(0, 0, angle)), direction * 50);
 			}
 		}
 
 		[Command]
-		void CmdFire()
+		void CmdFire(Vector2 bulletPos, Quaternion startRotation, Vector2 direction)
 		{
-			var mousePos = Input.mousePosition;
-			mousePos.z = 5.23F; //The distance between the camera and object
-			var spawnPos = PlayerCamera.WorldToScreenPoint(bulletSpawn.position);
-			mousePos.x = mousePos.x - spawnPos.x;
-			mousePos.y = mousePos.y - spawnPos.y;
-			var angle = Mathf.Atan2(mousePos.y, mousePos.x) * Mathf.Rad2Deg;
-			bulletSpawn.rotation = Quaternion.Euler(new Vector3(0, 0, angle));
-
-			Vector3 worldMousePos = PlayerCamera.ScreenToWorldPoint(Input.mousePosition);
-
-			Vector2 direction = (Vector2)((worldMousePos - transform.position));
-			direction.Normalize ();
-
-
 
 			// Create the Bullet from the Bullet Prefab
-
-
 			var bullet = (GameObject)Instantiate(
 				bulletPrefab,
-				bulletSpawn.position + (Vector3)( direction * 0.5f),
-				bulletSpawn.rotation);
+				bulletPos,
+				startRotation);
 
 			// Add velocity to the bullet
-			bullet.GetComponent<Rigidbody2D>().velocity = direction * 50;
+			bullet.GetComponent<Rigidbody2D>().velocity = direction;
 
 			// Spawn the bullet on the Clients
 			NetworkServer.Spawn(bullet);

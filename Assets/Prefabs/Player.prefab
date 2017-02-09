@@ -178,7 +178,7 @@ Camera:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1029685774271316}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 2
   m_ClearFlags: 2
   m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
@@ -260,7 +260,7 @@ AudioListener:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1029685774271316}
-  m_Enabled: 1
+  m_Enabled: 0
 --- !u!92 &92342101165502802
 Behaviour:
   m_ObjectHideFlags: 1
@@ -371,17 +371,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 798bf9c88b3edd2499780a49cd6cc76c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PlayerCamera: {fileID: 20602230387592262}
+  PlayerCamera: {fileID: 1029685774271316}
   bulletPrefab: {fileID: 1901227014131632, guid: 2b78722b31e14485e9d2219d124c1d4b,
     type: 2}
   bulletSpawn: {fileID: 4133502918471596}
+  _curCamera: {fileID: 0}
 --- !u!114 &114733420154761514
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1029685774271316}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5d8238cc53530b64fbb7828c3d3bb591, type: 3}
   m_Name: 

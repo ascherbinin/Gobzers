@@ -74,6 +74,10 @@ namespace Gobzers
 			if (NetworkServer.active || NetworkClient.active) {
 				manager.StopHost ();
 				ChangeUI ();
+				if (GameObject.Find ("SceneCamera") != null && !GameObject.Find ("SceneCamera").activeSelf) 
+				{
+					GameObject.Find ("SceneCamera").SetActive (true);
+				};
 			}
 		}
 

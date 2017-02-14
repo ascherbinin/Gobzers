@@ -6,26 +6,35 @@ namespace Gobzers
 {
     public class PlatformerCharacter2D : NetworkBehaviour
     {
-        [SerializeField] private float m_MaxSpeed = 10f;                    // The fastest the player can travel in the x axis.
-        [SerializeField] private float m_JumpForce = 400f;                  // Amount of force added when the player jumps.
-        [Range(0, 1)] [SerializeField] private float m_CrouchSpeed = .36f;  // Amount of maxSpeed applied to crouching movement. 1 = 100%
-        [SerializeField] private bool m_AirControl = false;                 // Whether or not a player can steer while jumping;
-        [SerializeField] private LayerMask m_WhatIsGround;                  // A mask determining what is ground to the character
+        // PUBLIC
+        public Camera playerCamera;
+        
+		// PRIVATE
+		private Transform m_GroundCheck;    // A position marking where to check if the player is grounded.
+		private int _fallDamageModify = 0;
+		private Animator m_Anim;            // Reference to the player's animator component.
+		private Rigidbody2D m_Rigidbody2D;
+		private PlayerPosSync syncPos;
+		private bool m_FacingRight = true;  // For determining which way the player is currently facing.
+		private bool fallDamage = false;
+		// Whether or not the player is grounded.
+		private Transform m_CeilingCheck;   // A position marking where to check for ceilings
+
+		[SerializeField] private float m_MaxSpeed = 10f;                    // The fastest the player can travel in the x axis.
+		[SerializeField] private float m_JumpForce = 400f;                  // Amount of force added when the player jumps.
+		[Range(0, 1)] [SerializeField] private float m_CrouchSpeed = .36f;  // Amount of maxSpeed applied to crouching movement. 1 = 100%
+		[SerializeField] private bool m_AirControl = false;                 // Whether or not a player can steer while jumping;
+		[SerializeField] private LayerMask m_WhatIsGround;                  // A mask determining what is ground to the character
 		[SerializeField] private Health _health;
 		[SerializeField] private bool m_Grounded; 
 
-        private Transform m_GroundCheck;    // A position marking where to check if the player is grounded.
-        const float k_GroundedRadius = .2f; // Radius of the overlap circle to determine if grounded
-       // Whether or not the player is grounded.
-        private Transform m_CeilingCheck;   // A position marking where to check for ceilings
-        const float k_CeilingRadius = .01f; // Radius of the overlap circle to determine if the player can stand up
-        private Animator m_Anim;            // Reference to the player's animator component.
-        private Rigidbody2D m_Rigidbody2D;
-        private PlayerPosSync syncPos;
-        private bool m_FacingRight = true;  // For determining which way the player is currently facing.
-		private bool fallDamage = false;
-		public Camera playerCamera;
-        
+
+		//CONSTS
+
+		public const int FALL_DAMAGE_DEF_VALUE = 10;
+		const float GROUNDED_RADIUS = .2f; // Radius of the overlap circle to determine if grounded
+		const float CEILING_RADIUS = .01f; // Radius of the overlap circle to determine if the player can stand up
+
 		private void Awake()
         {
             // Setting up references.
@@ -46,7 +55,7 @@ namespace Gobzers
 
             // The player is grounded if a circlecast to the groundcheck position hits anything designated as ground
             // This can be done using layers instead but Sample Assets will not overwrite your project settings.
-            Collider2D[] colliders = Physics2D.OverlapCircleAll(m_GroundCheck.position, k_GroundedRadius, m_WhatIsGround);
+            Collider2D[] colliders = Physics2D.OverlapCircleAll(m_GroundCheck.position, GROUNDED_RADIUS, m_WhatIsGround);
             for (int i = 0; i < colliders.Length; i++)
             {
                 if (colliders[i].gameObject != gameObject)
@@ -58,7 +67,7 @@ namespace Gobzers
             m_Anim.SetFloat("vSpeed", m_Rigidbody2D.velocity.y);
 
 			Vector3 mousePos = playerCamera.ScreenToWorldPoint(Input.mousePosition);
-			Debug.Log (mousePos);
+			//Debug.Log (mousePos);
 			if ((mousePos.x > transform.position.x && !m_FacingRight) || (mousePos.x < transform.position.x && m_FacingRight)) {
 				m_FacingRight = !m_FacingRight;
 				syncPos.CmdFlipSprite(m_FacingRight);
@@ -67,16 +76,21 @@ namespace Gobzers
 			if (!m_Grounded) {
 				float currentSpeed = Mathf.Abs (m_Rigidbody2D.velocity.y);
 				Debug.Log (currentSpeed);
-				if (currentSpeed > 25f) {
+				if (currentSpeed > 30f) {
 					fallDamage = true;
-					Debug.Log ("FALL");
+					_fallDamageModify = (int)currentSpeed / 10;
+					Debug.Log ("FALL: " + _fallDamageModify);
 				} else
 					fallDamage = false;
 			}
 
-			if (m_Grounded && fallDamage) {
-				_health.TakeDamage (15);
+			if (m_Grounded && fallDamage) 
+			{
+				Debug.Log ("DAMAGE MODIFY = " + _fallDamageModify);
+				Debug.Log ("DAMAGE = " + FALL_DAMAGE_DEF_VALUE * (int)_fallDamageModify);
+				_health.TakeDamage (FALL_DAMAGE_DEF_VALUE * (int)_fallDamageModify);
 				fallDamage = false;
+				_fallDamageModify = 0;
 			}
         }
 
@@ -87,7 +101,7 @@ namespace Gobzers
             if (!crouch && m_Anim.GetBool("Crouch"))
             {
                 // If the character has a ceiling preventing them from standing up, keep them crouching
-                if (Physics2D.OverlapCircle(m_CeilingCheck.position, k_CeilingRadius, m_WhatIsGround))
+                if (Physics2D.OverlapCircle(m_CeilingCheck.position, CEILING_RADIUS, m_WhatIsGround))
                 {
                     crouch = true;
                 }

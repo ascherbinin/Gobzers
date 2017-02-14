@@ -18,7 +18,7 @@ public class PlayerPosSync : NetworkBehaviour {
     [Command]
     public void CmdFlipSprite(bool facing)
     {
-        Debug.Log("FACING: " + facing);
+        //Debug.Log("FACING: " + facing);
         netFacingRight = facing;
         if (netFacingRight)
         {
@@ -33,7 +33,7 @@ public class PlayerPosSync : NetworkBehaviour {
             transform.localScale = SpriteScale;
         }
                
-        Debug.Log("SCALE: " + transform.localScale);
+        //Debug.Log("SCALE: " + transform.localScale);
     }
 
     void FacingCallback(bool facing)

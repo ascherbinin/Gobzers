@@ -20,8 +20,9 @@ public class Health : NetworkBehaviour
 		CurrentHealth -= amount;
 		if (CurrentHealth <= 0)
 		{
-			CurrentHealth = 0;
-			Debug.Log ("DEAD!");
+			CurrentHealth = MAX_HEALTH;
+
+			RpcRespawn ();
 		}
 
 	}
@@ -29,5 +30,15 @@ public class Health : NetworkBehaviour
 	void OnChangeHealth (int health)
 	{
 		healthBar.sizeDelta = new Vector2(health, healthBar.sizeDelta.y);
+	}
+
+	[ClientRpc]
+	void RpcRespawn()
+	{
+		if (isLocalPlayer)
+		{
+			// move back to zero location
+			transform.position = Vector3.zero;
+		}
 	}
 }

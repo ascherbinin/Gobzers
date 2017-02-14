@@ -13,7 +13,9 @@ namespace Gobzers
 
 		[SerializeField]
 		private Camera _curCamera;
-		private float _fireRate = 0.5f;
+        [SerializeField]
+        private Health _health;
+        private float _fireRate = 0.5f;
 		private float _lastFireTime;
 		private int _playerBullet = 6;
 		// Use this for initialization
@@ -30,7 +32,8 @@ namespace Gobzers
 					GameObject.Find ("SceneCamera").SetActive (false);
 				}
 				PlayerCamera.transform.parent = transform;
-	        }
+                _health = GetComponent<Health>();
+            }
 		}
 		
 		// Update is called once per frame
@@ -63,6 +66,11 @@ namespace Gobzers
 				Debug.Log("Reload");
 				_playerBullet = 6;
 			}
+
+            if(Input.GetKeyDown(KeyCode.T))
+            {
+                _health.TakeDamage(100);
+            }
 		}
 
 		[Command]

@@ -21,7 +21,6 @@ public class Health : NetworkBehaviour
 		if (CurrentHealth <= 0)
 		{
 			CurrentHealth = MAX_HEALTH;
-
 			RpcRespawn ();
 		}
 
@@ -37,8 +36,8 @@ public class Health : NetworkBehaviour
 	{
 		if (isLocalPlayer)
 		{
-			// move back to zero location
-			transform.position = Vector3.zero;
+            // move back to zero location
+            transform.position = GameManager.Instance.GetRespawnPos();
 		}
 	}
 }

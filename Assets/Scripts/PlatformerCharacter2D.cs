@@ -22,7 +22,10 @@ namespace Gobzers
 
 		[SerializeField] private float m_MaxSpeed = 10f;                    // The fastest the player can travel in the x axis.
 		[SerializeField] private float m_JumpForce = 400f;                  // Amount of force added when the player jumps.
-		[Range(0, 1)] [SerializeField] private float m_CrouchSpeed = .36f;  // Amount of maxSpeed applied to crouching movement. 1 = 100%
+		[Range(0, 1)] 
+		[SerializeField] private float m_CrouchSpeed = .36f;  // Amount of maxSpeed applied to crouching movement. 1 = 100%
+		[Range(0, 1)] 
+		[SerializeField] private float m_BackWalkSpeed = .50f;
 		[SerializeField] private bool m_AirControl = false;                 // Whether or not a player can steer while jumping;
 		[SerializeField] private LayerMask m_WhatIsGround;                  // A mask determining what is ground to the character
 		[SerializeField] private Health _health;
@@ -115,7 +118,10 @@ namespace Gobzers
             {
                 // Reduce the speed if crouching by the crouchSpeed multiplier
                 move = (crouch ? move*m_CrouchSpeed : move);
-
+				if (m_FacingRight && m_Rigidbody2D.velocity.x < 0 ||
+					!m_FacingRight && m_Rigidbody2D.velocity.x > 0) {
+					move = move * m_BackWalkSpeed;
+				}
                 // The Speed animator parameter is set to the absolute value of the horizontal input.
                 m_Anim.SetFloat("Speed", Mathf.Abs(move));
 

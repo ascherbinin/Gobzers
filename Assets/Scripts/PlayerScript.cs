@@ -7,9 +7,16 @@ namespace Gobzers
 {
 	public class PlayerScript : NetworkBehaviour
 	{
+		//Sounds
+		public AudioClip empty_rev;
+		public AudioClip single_shot;
+
 		public GameObject PlayerCamera;
 		public GameObject bulletPrefab;
 		public Transform bulletSpawn;
+
+		public Canvas reloadBarCanvas;
+		public RectTransform reloadBar;
 
 		[SerializeField]
 		private Camera _curCamera;
@@ -18,6 +25,8 @@ namespace Gobzers
         private float _fireRate = 0.5f;
 		private float _lastFireTime;
 		private int _playerBullet = 6;
+		private int _reloadTime = 5;
+		private AudioSource _audio;
 		// Use this for initialization
 		void Start ()
 		{
@@ -33,6 +42,7 @@ namespace Gobzers
 				}
 				PlayerCamera.transform.parent = transform;
                 _health = GetComponent<Health>();
+				_audio = GetComponent<AudioSource> ();
             }
 		}
 		
@@ -44,6 +54,10 @@ namespace Gobzers
 				return;
 			}
 
+			if ((Input.GetButtonDown ("Fire1") ||
+			    Input.GetButtonDown ("Fire2")) && _playerBullet == 0)
+				_audio.PlayOneShot (empty_rev);
+			
 	        //Debug.Log("Update");
 			if (Input.GetButtonDown("Fire1") &&
 				Time.time > _fireRate + _lastFireTime &&
@@ -64,7 +78,7 @@ namespace Gobzers
 
 			if (Input.GetKeyDown (KeyCode.R)) {
 				Debug.Log("Reload");
-				_playerBullet = 6;
+				StartCoroutine(Reload());
 			}
 
             if(Input.GetKeyDown(KeyCode.T))
@@ -76,7 +90,7 @@ namespace Gobzers
 		[Command]
 		void CmdFire(Vector2 bulletPos, Quaternion startRotation, Vector2 velocity)
 		{
-
+			_audio.PlayOneShot (single_shot);
 			// Create the Bullet from the Bullet Prefab
 			var bullet = (GameObject)Instantiate(
 				bulletPrefab,
@@ -123,6 +137,16 @@ namespace Gobzers
 
 			direction = (Vector2)((worldMousePos - transform.position));
 			direction.Normalize ();
+		}
+
+		IEnumerator Reload ()
+		{
+			float reloadTime = Time.deltaTime + _reloadTime;
+			reloadBarCanvas.gameObject.SetActive(true);
+			reloadBarCanvas.GetComponent<Canvas> ().enabled = true;
+			reloadBar.sizeDelta = new Vector2(reloadTime - Time.deltaTime, reloadBar.sizeDelta.y);
+			yield return new WaitForSeconds (_reloadTime);
+			_playerBullet = 6;
 		}
 	}
 }

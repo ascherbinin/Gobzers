@@ -9,6 +9,8 @@ namespace Gobzers
         // PUBLIC
         public Camera playerCamera;
         
+
+
 		// PRIVATE
 		private Transform m_GroundCheck;    // A position marking where to check if the player is grounded.
 		private int _fallDamageModify = 0;
@@ -26,6 +28,7 @@ namespace Gobzers
 		[SerializeField] private float m_CrouchSpeed = .36f;  // Amount of maxSpeed applied to crouching movement. 1 = 100%
 		[Range(0, 1)] 
 		[SerializeField] private float m_BackWalkSpeed = .50f;
+		[SerializeField] private float m_RunSpeed = 1.33f;
 		[SerializeField] private bool m_AirControl = false;                 // Whether or not a player can steer while jumping;
 		[SerializeField] private LayerMask m_WhatIsGround;                  // A mask determining what is ground to the character
 		[SerializeField] private Health _health;
@@ -98,7 +101,7 @@ namespace Gobzers
         }
 
 
-        public void Move(float move, bool crouch, bool jump)
+		public void Move(float move, bool crouch, bool run, bool jump)
         {
             // If crouching, check to see if the character can stand up
             if (!crouch && m_Anim.GetBool("Crouch"))
@@ -122,6 +125,7 @@ namespace Gobzers
 					!m_FacingRight && m_Rigidbody2D.velocity.x > 0) {
 					move = move * m_BackWalkSpeed;
 				}
+				move = (run ? move * m_RunSpeed : move);
                 // The Speed animator parameter is set to the absolute value of the horizontal input.
                 m_Anim.SetFloat("Speed", Mathf.Abs(move));
 

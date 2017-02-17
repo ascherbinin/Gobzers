@@ -25,7 +25,7 @@ namespace Gobzers
         private float _fireRate = 0.5f;
 		private float _lastFireTime;
 		private int _playerBullet = 6;
-		private int _reloadTime = 5;
+		private int _reloadTime = 3;
 		private AudioSource _audio;
 		// Use this for initialization
 		void Start ()
@@ -41,9 +41,9 @@ namespace Gobzers
 					GameObject.Find ("SceneCamera").SetActive (false);
 				}
 				PlayerCamera.transform.parent = transform;
-                _health = GetComponent<Health>();
-				_audio = GetComponent<AudioSource> ();
             }
+			_health = GetComponent<Health>();
+			_audio = GetComponent<AudioSource> ();
 		}
 		
 		// Update is called once per frame
@@ -78,6 +78,7 @@ namespace Gobzers
 
 			if (Input.GetKeyDown (KeyCode.R)) {
 				Debug.Log("Reload");
+				_playerBullet = 0;
 				StartCoroutine(Reload());
 			}
 
@@ -87,11 +88,28 @@ namespace Gobzers
             }
 		}
 
-		[Command]
-		void CmdFire(Vector2 bulletPos, Quaternion startRotation, Vector2 velocity)
+		void Fire(Vector2 bulletPos, Quaternion startRotation, Vector2 velocity)
 		{
 			_audio.PlayOneShot (single_shot);
+			Debug.Log (_audio);
 			// Create the Bullet from the Bullet Prefab
+			CmdCreateBullet(bulletPos, startRotation, velocity);
+
+			// Spawn the bullet on the Clients
+			//NetworkServer.Spawn(bullet);
+			// Destroy the bullet after 2 seconds
+
+		}
+
+		[Command]
+		private void CmdCreateBullet(Vector2 bulletPos, Quaternion startRotation, Vector2 velocity)
+		{
+			RpcLocalBullet (bulletPos, startRotation, velocity);
+		}
+
+		[ClientRpc]
+		private void RpcLocalBullet(Vector2 bulletPos, Quaternion startRotation, Vector2 velocity)
+		{
 			var bullet = (GameObject)Instantiate(
 				bulletPrefab,
 				bulletPos,
@@ -99,11 +117,6 @@ namespace Gobzers
 
 			// Add velocity to the bullet
 			bullet.GetComponent<Rigidbody2D>().velocity = velocity;
-
-			// Spawn the bullet on the Clients
-			NetworkServer.Spawn(bullet);
-
-			// Destroy the bullet after 2 seconds
 			Destroy(bullet, 2.0f);
 		}
 
@@ -112,7 +125,7 @@ namespace Gobzers
 			Vector2 direction = new Vector2 ();
 			float angle;
 			CalculateShotDirection (out direction, out angle);
-			CmdFire(bulletSpawn.position + (Vector3)(direction * 0.5f), Quaternion.Euler(new Vector3(0, 0, angle)), direction * 50);
+			Fire(bulletSpawn.position + (Vector3)(direction * 0.5f), Quaternion.Euler(new Vector3(0, 0, angle)), direction * 50);
 		}
 
 		void SingleShot ()
@@ -120,7 +133,7 @@ namespace Gobzers
 			Vector2 direction = new Vector2 ();
 			float angle;
 			CalculateShotDirection (out direction, out angle);
-			CmdFire(bulletSpawn.position + (Vector3)(direction * 0.5f), Quaternion.Euler(new Vector3(0, 0, angle)), direction * 50);
+			Fire(bulletSpawn.position + (Vector3)(direction * 0.5f), Quaternion.Euler(new Vector3(0, 0, angle)), direction * 50);
 		}
 
 		void CalculateShotDirection (out Vector2 direction, out float angle)
@@ -141,12 +154,19 @@ namespace Gobzers
 
 		IEnumerator Reload ()
 		{
-			float reloadTime = Time.deltaTime + _reloadTime;
-			reloadBarCanvas.gameObject.SetActive(true);
+			float rate = (float)1 / (float)_reloadTime;
+			float i = 0;
+			reloadBarCanvas.gameObject.SetActive (true);
 			reloadBarCanvas.GetComponent<Canvas> ().enabled = true;
-			reloadBar.sizeDelta = new Vector2(reloadTime - Time.deltaTime, reloadBar.sizeDelta.y);
-			yield return new WaitForSeconds (_reloadTime);
+			while (i < 1) {
+				i += Time.deltaTime * rate;
+				reloadBar.sizeDelta = new Vector2 (i * 100, reloadBar.sizeDelta.y);
+				yield return 0;// WaitForSeconds (_reloadTime);
+			}
+
 			_playerBullet = 6;
+			reloadBarCanvas.gameObject.SetActive (false);
+			reloadBarCanvas.GetComponent<Canvas> ().enabled = false;
 		}
 	}
 }

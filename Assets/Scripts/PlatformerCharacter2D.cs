@@ -8,7 +8,7 @@ namespace Gobzers
     {
         // PUBLIC
         public Camera playerCamera;
-        
+		public float JetForce = 3.05f;
 
 
 		// PRIVATE
@@ -19,6 +19,8 @@ namespace Gobzers
 		private PlayerPosSync syncPos;
 		private bool m_FacingRight = true;  // For determining which way the player is currently facing.
 		private bool fallDamage = false;
+		private bool _flying = false;
+
 		// Whether or not the player is grounded.
 		private Transform m_CeilingCheck;   // A position marking where to check for ceilings
 
@@ -28,6 +30,7 @@ namespace Gobzers
 		[SerializeField] private float m_CrouchSpeed = .36f;  // Amount of maxSpeed applied to crouching movement. 1 = 100%
 		[Range(0, 1)] 
 		[SerializeField] private float m_BackWalkSpeed = .50f;
+		[SerializeField] private int m_Gravity = 3;
 		[SerializeField] private float m_RunSpeed = 1.33f;
 		[SerializeField] private bool m_AirControl = false;                 // Whether or not a player can steer while jumping;
 		[SerializeField] private LayerMask m_WhatIsGround;                  // A mask determining what is ground to the character
@@ -50,6 +53,8 @@ namespace Gobzers
             m_Rigidbody2D = GetComponent<Rigidbody2D>();
             syncPos = GetComponent<PlayerPosSync>();
 			_health = GetComponent<Health> ();
+			m_Rigidbody2D.freezeRotation = true;
+			//m_Rigidbody2D.gravityScale = 0;
         }
 
 
@@ -98,11 +103,12 @@ namespace Gobzers
 				fallDamage = false;
 				_fallDamageModify = 0;
 			}
-        }
+		}
 
 
-		public void Move(float move, bool crouch, bool run, bool jump)
+		public void Move(float moveH, float moveV, bool crouch, bool run, ref bool jump, bool jp)
         {
+			
             // If crouching, check to see if the character can stand up
             if (!crouch && m_Anim.GetBool("Crouch"))
             {
@@ -120,27 +126,71 @@ namespace Gobzers
             if (m_Grounded || m_AirControl)
             {
                 // Reduce the speed if crouching by the crouchSpeed multiplier
-                move = (crouch ? move*m_CrouchSpeed : move);
+                moveH = (crouch ? moveH*m_CrouchSpeed : moveH);
 				if (m_FacingRight && m_Rigidbody2D.velocity.x < 0 ||
 					!m_FacingRight && m_Rigidbody2D.velocity.x > 0) {
-					move = move * m_BackWalkSpeed;
+					moveH = moveH * m_BackWalkSpeed;
 				}
-				move = (run ? move * m_RunSpeed : move);
+				moveH = (run ? moveH * m_RunSpeed : moveH);
                 // The Speed animator parameter is set to the absolute value of the horizontal input.
-                m_Anim.SetFloat("Speed", Mathf.Abs(move));
+                m_Anim.SetFloat("Speed", Mathf.Abs(moveH));
 
                 // Move the character
-                m_Rigidbody2D.velocity = new Vector2(move*m_MaxSpeed, m_Rigidbody2D.velocity.y);
+                m_Rigidbody2D.velocity = new Vector2(moveH*m_MaxSpeed, m_Rigidbody2D.velocity.y);
 
             }
+
+			if (_flying) 
+			{
+				Debug.Log ("MOVE V: " + moveV + " MOVE H: " + moveH);
+				if (moveH > 0) {
+					m_Rigidbody2D.AddForce(new Vector2(0f, Vector2.right.x * JetForce));
+				} else {
+					m_Rigidbody2D.AddForce(new Vector2(0f, -Vector2.right.x * JetForce));
+				}
+
+				if (moveV > 0) {
+					m_Rigidbody2D.AddForce(new Vector2(0f, Vector2.up.y * JetForce));
+				} else {
+					m_Rigidbody2D.AddForce(new Vector2(0f, -Vector2.up.y * JetForce));
+				}
+			}
+
             // If the player should jump...
             if (m_Grounded && jump && m_Anim.GetBool("Ground"))
             {
                 // Add a vertical force to the player.
                 m_Grounded = false;
                 m_Anim.SetBool("Ground", false);
-                m_Rigidbody2D.AddForce(new Vector2(0f, m_JumpForce));
+				m_Rigidbody2D.AddForce(new Vector2(0f, m_JumpForce));
+				jump = false;
             }
+
+			if (m_Grounded && !_flying && jp) {
+				jump = false;
+				_flying = true;
+				m_Grounded = false;
+				m_Anim.SetBool("Ground", false);
+				GetComponent<Rigidbody2D> ().gravityScale = 0;
+				m_Rigidbody2D.AddForce(new Vector2(0f, m_JumpForce/3));
+				jp = false;
+			}
+
+			if (jp && _flying) 
+			{
+				_flying = false;
+				GetComponent<Rigidbody2D> ().gravityScale = m_Gravity;
+				jump = false;
+				jp = false;
+			}
+
+			if (!m_Grounded && !_flying && jp) {
+				jump = false;
+				_flying = true;
+  				GetComponent<Rigidbody2D> ().gravityScale = 0;
+				jp = false;
+			}
         }
+
     }
 }
